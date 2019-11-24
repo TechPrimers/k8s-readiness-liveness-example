@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-boot-example
+  template:
+    metadata:
+      labels:
+        app: spring-boot-example
+    spec:
+      containers:
+        - name: spring-boot-example
+          image: 'gcr.io/fleet-resolver-237016/spring-boot-example:v2'
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /lazy
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-example
+  labels:
+    name: spring-boot-example
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-boot-example
+  type: LoadBalancer
